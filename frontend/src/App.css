@@ -1,38 +1,42 @@
-.App {
-  text-align: center;
-}
+/* App overall */
+.App { min-height: 100vh; background: #f7fbfd; font-family: "Segoe UI", Roboto, system-ui, -apple-system; color: #111827; }
+.container { max-width: 980px; margin: 18px auto; padding: 18px; }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
+/* header */
+.app-header { display:flex; align-items:center; gap:12px; margin-bottom: 14px; }
+.logo { font-size: 28px; }
+.app-header h1 { margin:0; font-size:28px; color:#0f172a; }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
+/* panel */
+.panel { background: #ffffff; border-radius: 10px; padding: 18px; box-shadow: 0 6px 18px rgba(13,42,63,0.06); }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
+/* summary layout */
+.top-row { display:flex; gap:14px; flex-wrap:wrap; margin-bottom: 12px; align-items:stretch; }
+.summary-card { flex:1 1 240px; background:#e6f2ff; padding:12px; border-radius:8px; box-shadow: 0 3px 10px rgba(2,6,23,0.04); }
+.summary-card.small { max-width: 320px; }
+.summary-label { font-size:13px; color:#0f172a; margin-bottom:6px; font-weight:600; }
+.summary-value { font-size:20px; font-weight:700; color:#054a91; }
 
-.App-link {
-  color: #61dafb;
-}
+/* form */
+.expense-form { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:18px; }
+.input { padding:8px 10px; border-radius:6px; border:1px solid #d1d5db; min-width:160px; }
+.btn { background:#0ea5e9; color:white; border:none; padding:9px 12px; border-radius:6px; cursor:pointer; font-weight:600; }
+.btn.small { padding:6px 8px; font-size:13px; }
+.btn.red { background:#ef4444; }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* list and cards */
+.list { margin-top:8px; display:flex; flex-direction:column; gap:10px; }
+.expense-card { padding:12px; border-radius:8px; background:white; box-shadow:0 4px 12px rgba(2,6,23,0.04); max-width:100%; }
+.expense-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.expense-title { font-weight:700; font-size:16px; color:#0f172a; }
+.expense-amt { font-weight:700; color:#0b6b3f; }
+.expense-meta { color:#374151; font-size:13px; margin-bottom:8px; display:flex; gap:18px; flex-wrap:wrap; }
+.expense-actions { display:flex; gap:8px; }
+
+/* misc */
+.muted { color:#6b7280; font-size:14px; }
+.cat-row { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed rgba(15,23,42,0.04); }
+@media (max-width:700px) {
+  .expense-form { flex-direction:column; align-items:stretch; }
+  .top-row { flex-direction:column; }
 }

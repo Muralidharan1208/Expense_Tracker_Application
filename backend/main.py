@@ -1,53 +1,71 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from bson import ObjectId
 
-# Local imports
 from models import Expense, ExpenseUpdate
-from database import expenses_collection  # ✅ corrected to match your database.py
-from services import add_expense, list_expenses, update_expense, delete_expense
+from services import add_expense, list_expenses, update_expense, delete_expense, get_totals_by_date
 
 app = FastAPI(title="Expense Tracker API")
 
-# ✅ Allow your frontend (React or any) to call this API
+# Allow CORS for frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],       # Allow all origins for simplicity
+    allow_origins=["*"],  # You can restrict to your frontend URL later
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ✅ Root route to check if API is running
-@app.get("/")
-def home():
-    return {"message": "Expense Tracker API running successfully 🚀"}
-
-
+# ------------------------
+# CREATE: Add a new expense
+# ------------------------
 @app.post("/expenses")
 async def create_expense(expense: Expense):
-    new_expense = await add_expense(expense.dict())
-    return new_expense
+    expense_dict = expense.dict()
+    result = await add_expense(expense_dict)
+    if "error" in result:
+        raise HTTPException(status_code=400, detail=result["error"])
+    return result
 
-
+# ------------------------
+# READ: List all expenses
+# ------------------------
 @app.get("/expenses")
 async def get_expenses():
-    return await list_expenses()
+    expenses = await list_expenses()
+    return expenses
 
+# ------------------------
+# READ: Get totals by date
+# ------------------------
+@app.get("/expenses/totals")
+async def get_expense_totals(date: str = Query(None, description="Date in YYYY-MM-DD format")):
+    totals = await get_totals_by_date(date)
+    if "error" in totals:
+        raise HTTPException(status_code=400, detail=totals["error"])
+    return totals
 
-@app.put("/expenses/{id}")
-async def edit_expense(id: str, expense: ExpenseUpdate):
-    updated = await update_expense(id, expense.dict(exclude_unset=True))
-    if not updated:
-        raise HTTPException(status_code=404, detail="Expense not found")
-    return updated
+# ------------------------
+# UPDATE: Update an existing expense
+# ------------------------
+@app.put("/expenses/{expense_id}")
+async def update_expense_endpoint(expense_id: str, expense: ExpenseUpdate):
+    update_data = expense.dict(exclude_unset=True)
+    result = await update_expense(expense_id, update_data)
+    if "error" in result:
+        raise HTTPException(status_code=404, detail=result["error"])
+    return result
 
+# ------------------------
+# DELETE: Delete an expense
+# ------------------------
+@app.delete("/expenses/{expense_id}")
+async def delete_expense_endpoint(expense_id: str):
+    result = await delete_expense(expense_id)
+    if "error" in result:
+        raise HTTPException(status_code=400, detail=result["error"])
+    return result
 
-@app.delete("/expenses/{id}")
-async def remove_expense(id: str):
-    deleted = await delete_expense(id)
-    if not deleted:
-        raise HTTPException(status_code=404, detail="Expense not found")
-    return {"message": "Expense deleted successfully"}
 
 
 

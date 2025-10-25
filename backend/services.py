@@ -49,7 +49,7 @@ async def add_expense(expense_data: dict):
         if isinstance(expense_data.get("date"), (date, datetime)):
             expense_data["date"] = expense_data["date"].isoformat()
 
-        # If date is not provided, set today
+        # If date not provided, set today
         if not expense_data.get("date"):
             expense_data["date"] = date.today().isoformat()
 
@@ -80,7 +80,7 @@ async def list_expenses():
     try:
         print("\n--- [LIST EXPENSES DEBUG] ---")
         expenses = []
-        # Sort first by date, then by serialNo within date
+        # Sort by date, then serialNo
         async for exp in expenses_collection.find().sort([("date", 1), ("serialNo", 1)]):
             expenses.append(expense_helper(exp))
         print("Total expenses fetched:", len(expenses))
@@ -136,6 +136,58 @@ async def delete_expense(id: str):
         traceback.print_exc()
         return {"error": str(e)}
 
+# ------------------------
+# TOTALS: Get totals by date
+# ------------------------
+async def get_totals_by_date(target_date: str = None):
+    """
+    Returns total expenses for a specific date, and totals per category.
+    If no date provided, defaults to today.
+    """
+    from bson.son import SON
+
+    if not target_date:
+        target_date = date.today().isoformat()
+
+    try:
+        # Aggregate totals per category for the date
+        pipeline = [
+            {"$match": {"date": target_date}},
+            {
+                "$group": {
+                    "_id": "$category",
+                    "total_amount": {"$sum": "$amount"},
+                    "count": {"$sum": 1}
+                }
+            }
+        ]
+
+        by_category = []
+        cursor = expenses_collection.aggregate(pipeline)
+        async for doc in cursor:
+            by_category.append({
+                "category": doc["_id"],
+                "total_amount": doc["total_amount"],
+                "count": doc["count"]
+            })
+
+        # Aggregate total amount for the date
+        total_pipeline = [
+            {"$match": {"date": target_date}},
+            {"$group": {"_id": None, "total_amount": {"$sum": "$amount"}}}
+        ]
+
+        total_cursor = expenses_collection.aggregate(total_pipeline)
+        total = 0
+        async for t in total_cursor:
+            total = t["total_amount"]
+
+        return {"date": target_date, "total_amount": total, "by_category": by_category}
+
+    except Exception as e:
+        print("Get Totals Error:", e)
+        traceback.print_exc()
+        return {"error": str(e)}
 
 
 
@@ -143,6 +195,7 @@ async def delete_expense(id: str):
 
 
 
+# *********************************************************************************************************
 
 
 # services.py
